@@ -8,7 +8,8 @@ app = Flask(__name__)
 
 @app.route("/")
 def index():
-    return render_template("video_capture.html")
+    # return render_template("video_capture.html")
+    return render_template("updated.html")
 
 
 @app.route("/latest_model_image")
@@ -102,7 +103,7 @@ def capture_user_image_and_infer():
 def run_yolo_on_image(input_path, output_dir):
     from ultralytics import YOLO
 
-    model_version = "best.pt"
+    model_version = "best-so-far.pt"
     model_path = os.path.join("models", model_version)
     if not os.path.exists(model_path):
         raise FileNotFoundError(f"Model file not found: models/{model_version}")
@@ -123,7 +124,7 @@ def run_yolo_on_image(input_path, output_dir):
             class_name = model.names[class_id]
             predicted_classes.append(class_name)
 
-    print(predicted_classes)
+    print(set(predicted_classes))
 
     # Move YOLO output image to saved_images/<uuid>.png
     yolo_output_path = os.path.join("temp", "run", input_filename)

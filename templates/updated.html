@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Smart Food Classifier</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #1a1a1a;
+      color: white;
+      min-height: 100vh;
+      overflow-y: auto;
+    }
+
+    /* Starry background */
+    .starfield {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .star {
+      position: absolute;
+      background: white;
+      border-radius: 50%;
+      opacity: 0;
+      animation: twinkle 3s infinite ease-in-out;
+    }
+
+    @keyframes twinkle {
+      0%, 100% { opacity: 0; }
+      50% { opacity: 0.8; }
+    }
+
+    /* Main content box */
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 800px;
+      margin: 40px auto;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 30px;
+      border-radius: 15px;
+      border: 2px solid #ffffff33;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+      text-align: center;
+    }
+
+    h2 {
+      font-size: 28px;
+      margin-bottom: 20px;
+      color: #ffd700;
+    }
+
+    button, input[type="file"] {
+      padding: 12px 25px;
+      font-size: 1rem;
+      margin: 10px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.3s ease;
+    }
+
+    .primary-btn {
+      background: #2196f3;
+      color: white;
+    }
+
+    .primary-btn:hover {
+      background: #0b7dda;
+    }
+
+    .secondary-btn {
+      background: #4caf50;
+      color: white;
+    }
+
+    .secondary-btn:hover {
+      background: #388e3c;
+    }
+
+    .upload-section, .live-section {
+      display: none;
+      margin-top: 20px;
+    }
+
+    video, img {
+      max-width: 90%;
+      max-height: 300px;
+      margin-top: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.3);
+    }
+
+    .model-output {
+      margin-top: 30px;
+    }
+
+    .model-output img {
+      width: 300px;
+      max-width: 100%;
+      border-radius: 12px;
+    }
+
+    ul#predictedClasses {
+      list-style: none;
+      padding: 0;
+      margin-top: 10px;
+    }
+
+    ul#predictedClasses li {
+      display: inline-block;
+      margin: 6px;
+      padding: 8px 14px;
+      background: #ffeb3b;
+      color: #333;
+      border-radius: 20px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+<div class="starfield" id="starfield"></div>
+
+<div class="container">
+  <h2>✨ Smart Food Classifier ✨</h2>
+
+  <div class="input-choice">
+    <button class="primary-btn" onclick="showUpload()">Upload Image</button>
+    <button class="secondary-btn" onclick="showLive()">Live Capture</button>
+  </div>
+
+  <!-- Upload Section -->
+  <div id="uploadSection" class="upload-section">
+    <input type="file" id="uploadInput" accept="image/*" />
+    <br/>
+    <button class="primary-btn" onclick="uploadImage()">Upload and Run Model</button>
+  </div>
+
+  <!-- Live Section -->
+  <div id="liveSection" class="live-section">
+    <video id="userVideo" autoplay playsinline></video>
+    <br/>
+    <button class="secondary-btn" onclick="handleLiveCapture()">📸 Capture</button>
+  </div>
+
+  <!-- Model Output -->
+  <div class="model-output">
+    <h3>🍽 Model Output</h3>
+    <img id="modelOutputImage" src="" alt="Model Output" />
+    <p>The predicted classes are:</p>
+    <ul id="predictedClasses"></ul>
+  </div>
+</div>
+
+<script>
+  // Sparkling stars
+  const field = document.getElementById('starfield');
+  const numStars = 150;
+  for(let i=0; i<numStars; i++){
+    const s = document.createElement('div');
+    s.className = 'star';
+    const size = Math.random()*2 + 1;
+    s.style.width = `${size}px`;
+    s.style.height = `${size}px`;
+    s.style.top = `${Math.random()*100}%`;
+    s.style.left = `${Math.random()*100}%`;
+    s.style.animationDelay = `${Math.random()*3}s`;
+    field.appendChild(s);
+  }
+
+  // UI Functionality
+  let userStream = null;
+
+  function showUpload() {
+    document.getElementById("uploadSection").style.display = "block";
+    document.getElementById("liveSection").style.display = "none";
+    stopVideo();
+  }
+
+  function showLive() {
+    document.getElementById("liveSection").style.display = "block";
+    document.getElementById("uploadSection").style.display = "none";
+    startVideo();
+  }
+
+  async function startVideo() {
+    const constraints = {
+      video: {
+        width: { ideal: 1280 },
+        height: { ideal: 720 },
+        facingMode: 'environment'
+      }
+    };
+    try {
+      userStream = await navigator.mediaDevices.getUserMedia(constraints);
+      document.getElementById('userVideo').srcObject = userStream;
+    } catch (err) {
+      alert('Camera error: ' + err.message);
+    }
+  }
+
+  function stopVideo() {
+    if (userStream) {
+      userStream.getTracks().forEach(track => track.stop());
+      userStream = null;
+    }
+  }
+
+  async function handleLiveCapture() {
+    const video = document.getElementById('userVideo');
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    
+    canvas.toBlob(async function(blob) {
+      const formData = new FormData();
+      formData.append('image', blob, 'live.png');
+      const res = await fetch('/capture_user_image_and_infer', {
+        method: 'POST',
+        body: formData
+      });
+      const data = await res.json();
+      if (res.ok) {
+        updateModelOutput(data.model_output_filename);
+        displayClasses(data.predicted_classes);
+      } else {
+        alert('Capture error: ' + data.error);
+      }
+    }, 'image/png');
+  }
+
+  async function uploadImage() {
+    const input = document.getElementById("uploadInput");
+    if (!input.files || input.files.length === 0) {
+      alert("Please select an image.");
+      return;
+    }
+    const file = input.files[0];
+    const formData = new FormData();
+    formData.append("image", file);
+    const res = await fetch("/upload_and_infer_image", {
+      method: "POST",
+      body: formData
+    });
+    const data = await res.json();
+    if (res.ok) {
+      updateModelOutput(data.model_output_filename);
+      displayClasses(data.predicted_classes);
+    } else {
+      alert('Upload error: ' + data.error);
+    }
+  }
+
+  function displayClasses(classes) {
+    const predictedClassesElement = document.getElementById("predictedClasses");
+    predictedClassesElement.innerHTML = "";
+    classes.forEach(classLabel => {
+      const li = document.createElement("li");
+      li.textContent = classLabel;
+      predictedClassesElement.appendChild(li);
+    });
+  }
+
+  function updateModelOutput(filename) {
+    const output = document.getElementById("modelOutputImage");
+    output.src = "/saved_images/" + filename + "?t=" + Date.now();
+  }
+</script>
+</body>
+</html>
