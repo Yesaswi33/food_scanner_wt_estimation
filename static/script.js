@@ -1,4 +1,4 @@
-// === Starfield Animation ===
+// Starfield animation
 const field = document.getElementById('starfield');
 const numStars = 200;
 for (let i = 0; i < numStars; i++) {
