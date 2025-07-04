@@ -37,10 +37,10 @@
         <div id="fileInfo" class="file-info"></div>
       </div>
 
-      <div id="processing" class="processing">
+      <!-- <div id="processing" class="processing">
         <div class="loading-spinner"></div>
         <span>Analyzing your delicious food...</span>
-      </div>
+      </div> -->
 
       <div id="statusMessage" class="status-message"></div>
 
@@ -57,18 +57,6 @@
       <video id="userVideo" autoplay playsinline></video>
       <br />
       <button class="secondary-btn" onclick="handleLiveCapture()">📸 Capture & Analyze</button>
-    </div>
-
-    <!-- Model Output -->
-    <div class="model-output" id="modelOutput" style="display: none;">
-      <h3>🍽️ Food Analysis Results</h3>
-      <div class="flex">
-        <img id="modelOutputImage" src="" alt="Analyzed Food" />
-        <div>
-          <p style="font-size: 18px; margin: 20px 0; color: #e0e0e0;">Detected food items:</p>
-          <ul id="predictedClasses"></ul>
-        </div>
-      </div>
     </div>
   </div>
 

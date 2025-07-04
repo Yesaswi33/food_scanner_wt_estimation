@@ -121,7 +121,17 @@
         </tbody>
       </table>
     </div>
-
+    <!-- Model Output -->
+    <div class="model-output" id="modelOutput" style="display: none;">
+      <h3>🍽️ Food Analysis Results</h3>
+      <div class="flex">
+        <img id="modelOutputImage" src="" alt="Analyzed Food" />
+        <div>
+          <p style="font-size: 18px; margin: 20px 0; color: #e0e0e0;">Detected food items:</p>
+          <ul id="predictedClasses"></ul>
+        </div>
+      </div>
+    </div>
     <div class="suggestion-box">Eat more greens for vitamins</div>
     <div class="suggestion-box">Reduce sugar intake</div>
     <div class="suggestion-box">Increase protein for muscle growth</div>
