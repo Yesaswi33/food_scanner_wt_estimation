@@ -75,9 +75,6 @@ def infer_image():
         return render_template("error.html",data=e)
 
 
-
-
-
 if __name__ == "__main__":
     os.makedirs("saved_images", exist_ok=True)
     os.makedirs("captured_images", exist_ok=True)
