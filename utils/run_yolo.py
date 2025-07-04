@@ -1,10 +1,26 @@
 
+import os
+from ultralytics import YOLO
+import cv2
+import numpy as np
+color_map={}
+def get_color_for_class(class_name):
+    """Get consistent color for a class name"""
+    global color_map
+    if class_name not in color_map:
+        # Generate a random color and store it
+        color_map[class_name] = (
+            np.random.randint(150, 256),
+            np.random.randint(175, 256),
+            np.random.randint(100, 256),
+        )
+    return color_map[class_name]
 def run_yolo_on_image(input_path, output_dir):
     model_version = "best-so-far.pt"
     model_path = os.path.join("models", model_version)
     if not os.path.exists(model_path):
         raise FileNotFoundError(f"Model file not found: models/{model_version}")
-
+    print("====================")
     model = YOLO(model_path)
     input_filename = os.path.basename(input_path)
     results = model.predict(source=input_path, save=False)

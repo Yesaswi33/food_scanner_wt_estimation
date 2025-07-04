@@ -21,9 +21,10 @@ def get_gemini_response(details, image_path=None):
     "- Macronutrient breakdown (carbs, protein, fats)\n"
     "Also provide 2 personalized nutrition suggestions based on what you see."
     )
-
+    print(image_path)
     if image_path:
-        image = Image.open(image_path)
+        image = Image.open(os.path.join("saved_images",image_path))
+        
         response = vision_model.generate_content([prompt, image])
     print("Gemini Response:", response.text)
     return response.text

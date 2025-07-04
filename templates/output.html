@@ -1,141 +1,109 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Nutrition Estimation App</title>
+  <meta charset="UTF-8" />
+  <title>Food Analysis Result</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
   <style>
     body {
-      margin: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(to right, #ffecd2, #fcb69f);
-      color: #333;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 30px;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #111;
+      color: #f0f0f0;
+      text-align: center;
+      padding: 2rem;
     }
 
     .container {
-      max-width: 1000px;
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
+      max-width: 900px;
+      margin: 0 auto;
+      background-color: #1e1e1e;
+      padding: 2rem;
+      border-radius: 1rem;
+      box-shadow: 0 0 15px rgba(0, 255, 200, 0.2);
     }
 
-    .top-row {
-      display: flex;
-      justify-content: space-between;
-      gap: 20px;
+    .image-preview {
+      max-width: 100%;
+      height: auto;
+      border-radius: 1rem;
+      margin-bottom: 2rem;
+      border: 2px solid #0ff;
     }
 
-    .box {
-      background: #ffffff;
-      flex: 1;
-      padding: 30px;
-      border-radius: 15px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      text-align: center;
-      font-size: 1.2rem;
-      font-weight: 500;
+    .result-title {
+      font-size: 2rem;
+      margin-bottom: 1rem;
     }
 
-    .table-box {
-      background-color: #ffffff;
-      border-radius: 15px;
-      padding: 20px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      overflow-x: auto;
+    .food-list {
+      text-align: left;
+      margin-top: 1rem;
+      padding-left: 0;
     }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      color: #333;
+    .food-list li {
+      list-style: none;
+      margin: 0.5rem 0;
+      padding: 0.5rem;
+      background: #333;
+      border-left: 4px solid #0ff;
+      border-radius: 0.5rem;
     }
 
-    th, td {
-      border: 1px solid #ddd;
-      padding: 12px;
-      text-align: center;
+    .gemini-output {
+      text-align: left;
+      margin-top: 2rem;
+      padding: 1rem;
+      background-color: #222;
+      border-left: 5px solid #00ffa5;
+      border-radius: 0.5rem;
+      white-space: pre-wrap;
     }
 
-    th {
-      background-color: #fcb69f;
-      color: #fff;
+    .back-btn {
+      margin-top: 2rem;
+      padding: 0.7rem 1.5rem;
+      background: #0ff;
+      color: #000;
+      border: none;
       font-weight: bold;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      transition: background 0.3s;
     }
 
-    tr:nth-child(even) {
-      background-color: #f9f9f9;
-    }
-
-    tr:hover {
-      background-color: #ffe6e0;
-    }
-
-    .suggestion-box {
-      background-color: #ffffff;
-      padding: 18px;
-      border-radius: 12px;
-      text-align: center;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      font-weight: 500;
+    .back-btn:hover {
+      background: #00e6cc;
     }
   </style>
 </head>
+
 <body>
   <div class="container">
-    <div class="top-row">
-      <div class="box">Image</div>
-      <div class="box">Labels</div>
+    <h1 class="result-title">🍽️ Food Analysis Result</h1>
+
+    <img class="image-preview" src="{{ url_for('serve_saved_image', filename=data.model_output_filename) }}" alt="Processed Image" />
+
+    <h2>🍕 Detected Food Items:</h2>
+    <ul class="food-list">
+      {% for item in data.predicted_classes %}
+        <li>{{ loop.index }}. {{ item }}</li>
+      {% else %}
+        <li>No food items detected.</li>
+      {% endfor %}
+    </ul>
+
+    <h2>🧠 Gemini AI Nutrition Insights:</h2>
+    <div class="gemini-output">
+      {{ data.gemini_response }}
     </div>
 
-    <div class="table-box">
-      <table>
-        <thead>
-          <tr>
-            <th>Food Item</th>
-            <th>Calories</th>
-            <th>Protein</th>
-            <th>Fat</th>
-            <th>Total</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Food Item 1</td>
-            <td>200</td>
-            <td>10g</td>
-            <td>8g</td>
-            <td><strong>218 kcal</strong></td>
-          </tr>
-          <tr>
-            <td>Food Item 2</td>
-            <td>150</td>
-            <td>5g</td>
-            <td>6g</td>
-            <td><strong>161 kcal</strong></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    <!-- Model Output -->
-    <div class="model-output" id="modelOutput" style="display: none;">
-      <h3>🍽️ Food Analysis Results</h3>
-      <div class="flex">
-        <img id="modelOutputImage" src="" alt="Analyzed Food" />
-        <div>
-          <p style="font-size: 18px; margin: 20px 0; color: #e0e0e0;">Detected food items:</p>
-          <ul id="predictedClasses"></ul>
-        </div>
-      </div>
-    </div>
-    <div class="suggestion-box">Eat more greens for vitamins</div>
-    <div class="suggestion-box">Reduce sugar intake</div>
-    <div class="suggestion-box">Increase protein for muscle growth</div>
-    <div class="suggestion-box">Stay hydrated</div>
+    <a href="{{ url_for('index') }}">
+      <button class="back-btn">🔄 Analyze Another</button>
+    </a>
   </div>
 </body>
+
 </html>
