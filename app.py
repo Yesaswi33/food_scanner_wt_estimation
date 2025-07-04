@@ -51,7 +51,7 @@ def infer_image():
 
         unique_id = str(uuid.uuid4())
         filename = f"{unique_id}.jpg"
-
+        print("==================")
         captured_folder = "captured_images"
         saved_folder = "saved_images"
         os.makedirs(captured_folder, exist_ok=True)
@@ -63,19 +63,16 @@ def infer_image():
         predicted_classes, boxes_info = run_yolo_on_image(capture_path, saved_folder)
         response= get_gemini_response(details={predicted_classes,boxes_info},image_path=filename);
         data={
-                message: "Image uploaded and model run",
-                model_output_filename: filename,
-                predicted_classes: predicted_classes,
-                boxes: boxes_info,
-                gemini_response: response,
+                "message": "Image uploaded and model run",
+                "model_output_filename": filename,
+                "predicted_classes": predicted_classes,
+                "boxes": boxes_info,
+                "gemini_response": response,
             }
-        return render_template("output.html",data)
+        return render_template("output.html",data=data)
     except Exception as e:
         print(e)
-        return render_template("error.html",e.message)
-
-
-
+        return render_template("error.html",data=e)
 
 
 if __name__ == "__main__":
