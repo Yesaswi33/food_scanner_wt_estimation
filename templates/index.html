@@ -1,190 +1,78 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Nutrition Scanner</title>
-  <style>
-    /* [Same CSS as before — omitted for brevity, you can paste your current styles here] */
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart Food Classifier</title>
+  <link rel="stylesheet" href="../static/styles.css">
 </head>
+
 <body>
+
+  <div class="starfield" id="starfield"></div>
+
   <div class="container">
-    <div class="camera-section" id="cameraSection">
-      <div class="camera-placeholder" id="cameraPlaceholder">
-        <div class="camera-icon"></div>
-        <p>Point camera at food item</p>
-        <button class="start-camera-btn" onclick="startCamera()">Start Camera</button>
-        <div id="errorMessage" class="error-message" style="display: none;"></div>
-      </div>
-      <video id="video" autoplay playsinline style="display: none;"></video>
-      <canvas id="overlayCanvas" style="display: none; position: absolute; left: 0; top: 0; pointer-events: auto;"></canvas>
-      <button id="shutterButton" class="shutter-btn" style="display: none; margin-top: 10px;" onclick="captureImage()">📸 Capture</button>
-      <div class="distance-indicator" id="distanceIndicator" style="display: none;">
-        Distance: <span id="distanceValue">--</span> cm
-      </div>
+    <h2>✨ Smart Food Classifier ✨</h2>
+    <p class="subtitle">Discover what's on your plate with AI-powered food recognition</p>
+
+    <div class="input-choice">
+      <button class="primary-btn" onclick="showUpload()">📤 Upload Image</button>
+      <button class="secondary-btn" onclick="showLive()">📷 Live Capture</button>
     </div>
 
-    <div class="nutrition-grid" id="nutritionGrid">
-      <!-- Nutrition items will be updated dynamically -->
+    <!-- Upload Section -->
+    <div id="uploadSection" class="upload-section">
+      <div id="dropZone" class="drop-zone">
+        <div class="icon">🍽️</div>
+        <p><strong>Drop your food image here</strong><br>
+          or click to browse files<br>
+          <small>You can also paste from clipboard (Ctrl+V)</small>
+        </p>
+        <input type="file" id="uploadInput" accept="image/*" hidden />
+      </div>
+
+      <div id="previewContainer" class="preview-container" style="display: none;">
+        <img id="previewImage" class="preview-image" alt="Preview" />
+        <div id="fileInfo" class="file-info"></div>
+      </div>
+
+      <div id="processing" class="processing">
+        <div class="loading-spinner"></div>
+        <span>Analyzing your delicious food...</span>
+      </div>
+
+      <div id="statusMessage" class="status-message"></div>
+
+      <button id="uploadBtn" class="primary-btn" onclick="uploadImage()" style="display: none;">
+        🚀 Analyze Food
+      </button>
     </div>
 
-    <div class="sidebar">
-      <!-- Sidebar content -->
+    <!-- Live Section -->
+    <div id="liveSection" class="live-section">
+      <p style="margin-bottom: 20px; font-size: 16px; color: #ccc;">
+        📸 Position your food in the camera view and capture
+      </p>
+      <video id="userVideo" autoplay playsinline></video>
+      <br />
+      <button class="secondary-btn" onclick="handleLiveCapture()">📸 Capture & Analyze</button>
+    </div>
+
+    <!-- Model Output -->
+    <div class="model-output" id="modelOutput" style="display: none;">
+      <h3>🍽️ Food Analysis Results</h3>
+      <div class="flex">
+        <img id="modelOutputImage" src="" alt="Analyzed Food" />
+        <div>
+          <p style="font-size: 18px; margin: 20px 0; color: #e0e0e0;">Detected food items:</p>
+          <ul id="predictedClasses"></ul>
+        </div>
+      </div>
     </div>
   </div>
 
-  <script>
-    let stream = null;
-    const focalLengthPx = 700; // Approximate/calibrated value
-    const actualObjectHeightCM = 5; // Known height of target food item (e.g. apple, coin, etc.)
-    let points = [];
-    let overlayCanvas, overlayCtx, video;
-
-    async function startCamera() {
-        video = document.getElementById('video');
-        overlayCanvas = document.getElementById('overlayCanvas');
-        overlayCtx = overlayCanvas.getContext('2d');
-        const placeholder = document.getElementById('cameraPlaceholder');
-        const distanceIndicator = document.getElementById('distanceIndicator');
-        const errorMessage = document.getElementById('errorMessage');
-
-        try {
-            let constraints = {
-            video: {
-                facingMode: { exact: "environment" },
-                width: { ideal: 1280 },
-                height: { ideal: 720 }
-            }
-            };
-
-            try {
-            stream = await navigator.mediaDevices.getUserMedia(constraints);
-            } catch (err) {
-            console.warn("Rear camera not available, falling back to default camera...");
-            constraints = {
-                video: {
-                facingMode: "user", // fallback to front
-                width: { ideal: 1280 },
-                height: { ideal: 720 }
-                }
-            };
-            stream = await navigator.mediaDevices.getUserMedia(constraints);
-            }
-
-            video.srcObject = stream;
-            placeholder.style.display = 'none';
-            video.style.display = 'block';
-            distanceIndicator.style.display = 'block';
-            errorMessage.style.display = 'none';
-            document.getElementById('shutterButton').style.display = 'inline-block';
-
-            // Set up overlay canvas size and position
-            video.addEventListener('loadedmetadata', () => {
-              overlayCanvas.width = video.videoWidth;
-              overlayCanvas.height = video.videoHeight;
-              overlayCanvas.style.width = video.offsetWidth + 'px';
-              overlayCanvas.style.height = video.offsetHeight + 'px';
-              overlayCanvas.style.display = 'block';
-              overlayCanvas.style.position = 'absolute';
-              overlayCanvas.style.left = video.offsetLeft + 'px';
-              overlayCanvas.style.top = video.offsetTop + 'px';
-            });
-
-            setupCanvasInteraction();
-        } catch (error) {
-            console.error('Camera error:', error);
-            errorMessage.textContent = 'Camera access failed.';
-            errorMessage.style.display = 'block';
-        }
-    }
-
-    function estimateDistance(objectPixelHeight) {
-      if (objectPixelHeight <= 0) return null;
-      return (actualObjectHeightCM * focalLengthPx) / objectPixelHeight;
-    }
-
-    function setupCanvasInteraction() {
-      points = [];
-      overlayCanvas.addEventListener('click', function(e) {
-        const rect = overlayCanvas.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        points.push({x, y});
-        drawPoints();
-        if (points.length === 2) {
-          const pixelHeight = Math.abs(points[1].y - points[0].y);
-          const distance = estimateDistance(pixelHeight);
-          if (distance) {
-            document.getElementById('distanceValue').textContent = distance.toFixed(1);
-            updateBorderColor(distance);
-          }
-        }
-        if (points.length > 2) {
-          points = [];
-          overlayCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
-        }
-      });
-    }
-
-    function drawPoints() {
-      overlayCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
-      overlayCtx.fillStyle = 'red';
-      overlayCtx.strokeStyle = 'red';
-      overlayCtx.lineWidth = 2;
-      if (points.length > 0) {
-        overlayCtx.beginPath();
-        overlayCtx.arc(points[0].x, points[0].y, 5, 0, 2 * Math.PI);
-        overlayCtx.fill();
-      }
-      if (points.length > 1) {
-        overlayCtx.beginPath();
-        overlayCtx.arc(points[1].x, points[1].y, 5, 0, 2 * Math.PI);
-        overlayCtx.fill();
-        overlayCtx.beginPath();
-        overlayCtx.moveTo(points[0].x, points[0].y);
-        overlayCtx.lineTo(points[1].x, points[1].y);
-        overlayCtx.stroke();
-      }
-    }
-
-    function updateBorderColor(distance) {
-      const cameraSection = document.getElementById('cameraSection');
-      const tolerance = 3;
-      if (Math.abs(distance - 25) <= tolerance) {
-        cameraSection.classList.add('optimal-distance');
-      } else {
-        cameraSection.classList.remove('optimal-distance');
-      }
-    }
-
-    window.addEventListener('beforeunload', () => {
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop());
-      }
-    });
-
-    function captureImage() {
-      const video = document.getElementById('video');
-      const canvas = document.createElement('canvas');
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      canvas.toBlob(async function(blob) {
-        const formData = new FormData();
-        formData.append('image', blob, 'capture.png');
-        const response = await fetch('/capture', {
-          method: 'POST',
-          body: formData
-        });
-        if (response.ok) {
-          alert('Image captured and saved!');
-        } else {
-          alert('Failed to save image.');
-        }
-      }, 'image/png');
-    }
-  </script>
+  <script src="../static/script.js"></script>
 </body>
+
 </html>

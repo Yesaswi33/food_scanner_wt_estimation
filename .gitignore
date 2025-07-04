@@ -3,4 +3,4 @@
 .venv 
 __pycache__
 
-models/best.pt
+models/*.pt
