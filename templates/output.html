@@ -37,19 +37,24 @@
       margin-bottom: 1rem;
     }
 
-    .food-list {
-      text-align: left;
+    table {
+      width: 100%;
+      border-collapse: collapse;
       margin-top: 1rem;
-      padding-left: 0;
     }
 
-    .food-list li {
-      list-style: none;
-      margin: 0.5rem 0;
-      padding: 0.5rem;
-      background: #333;
-      border-left: 4px solid #0ff;
-      border-radius: 0.5rem;
+    th, td {
+      padding: 10px;
+      border: 1px solid #333;
+    }
+
+    th {
+      background-color: #00e6cc;
+      color: #000;
+    }
+
+    td {
+      background-color: #222;
     }
 
     .gemini-output {
@@ -82,22 +87,51 @@
 
 <body>
   <div class="container">
-    <h1 class="result-title">🍽️ Food Analysis Result</h1>
+    <h1 class="result-title">🍽 Food Analysis Result</h1>
 
-    <img class="image-preview" src="{{ url_for('serve_saved_image', filename=data.model_output_filename) }}" alt="Processed Image" />
+    <img class="image-preview"
+      src="{{ url_for('serve_saved_image', filename=data.model_output_filename) }}"
+      alt="Processed Image" />
 
-    <h2>🍕 Detected Food Items:</h2>
-    <ul class="food-list">
-      {% for item in data.predicted_classes %}
-        <li>{{ loop.index }}. {{ item }}</li>
-      {% else %}
-        <li>No food items detected.</li>
-      {% endfor %}
-    </ul>
+    <h2>🍕 Nutrition Details Per Item:</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Food Item</th>
+          <th>Calories</th>
+          <th>Protein (g)</th>
+          <th>Fat (g)</th>
+          <th>Carbohydrates (g)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if data.nutrition_data and data.nutrition_data|length > 0 %}
+          {% for item in data.nutrition_data %}
+          <tr>
+            <td>{{ item.food_item }}</td>
+            <td>{{ item.calories }}</td>
+            <td>{{ item.proteins }}</td>
+            <td>{{ item.fat }}</td>
+            <td>{{ item.carbs }}</td>
+          </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="5">No nutrition data available.</td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
 
-    <h2>🧠 Gemini AI Nutrition Insights:</h2>
+    <h2>🧠 Gemini AI Suggestions:</h2>
     <div class="gemini-output">
-      {{ data.gemini_response }}
+      {% if data.suggestions %}
+        {% for suggestion in data.suggestions %}
+          <p>💡 {{ suggestion }}</p>
+        {% endfor %}
+      {% else %}
+        <p>No suggestions available.</p>
+      {% endif %}
     </div>
 
     <a href="{{ url_for('index') }}">

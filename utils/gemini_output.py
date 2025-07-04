@@ -13,19 +13,50 @@ vision_model = genai.GenerativeModel("gemini-1.5-flash")
 
 
 def get_gemini_response(details, image_path=None):
-    prompt = (
-    "From the image provided, estimate:\n"
-    "- The name of the dish\n"
-    "- Approximate quantity in grams\n"
-    "- Calorie estimate\n"
-    "- Macronutrient breakdown (carbs, protein, fats)\n"
-    "Also provide 2 personalized nutrition suggestions based on what you see."
-    )
+    prompt = """
+You are a nutrition estimation expert. Given an image containing one or more food items (some with bounding boxes), your task is to:
+
+- Identify each food item.
+- Estimate nutritional values per item, including: calories, proteins (g), fats (g), and carbohydrates (g).
+- Provide two personalized dietary suggestions based on the overall plate.
+
+Return the response strictly in the following JSON format:
+
+{
+  "nutrition_data": [
+    {
+      "food_item": "<name>",
+      "calories": <int>,
+      "proteins": <float>,
+      "fat": <float>,
+      "carbs": <float>
+    },
+    ...
+  ],
+  "suggestions": [
+    "<suggestion_1>",
+    "<suggestion_2>"
+  ]
+}
+
+Only return valid JSON. Do not include any explanation or extra text.
+"""
+
+    
+    
     print(image_path)
     if image_path:
         image = Image.open(os.path.join("saved_images",image_path))
         
         response = vision_model.generate_content([prompt, image])
-    print("Gemini Response:", response.text)
-    return response.text
+    try:
+        # Auto-extract JSON if model outputs extra text
+        import json
+        import re
+
+        json_string = re.search(r"\{[\s\S]*\}", response.text).group(0)
+        return json.loads(json_string)
+    except Exception as e:
+        print("Failed to parse Gemini response:", e)
+        return {"error": "Invalid response from Gemini", "raw": response.text}
 

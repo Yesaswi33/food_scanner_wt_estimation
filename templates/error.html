@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>⚠️ Oops! An Error Occurred</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <style>
+    body {
+      background-color: #0a0a0a;
+      color: #f2f2f2;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      padding: 1rem;
+    }
+
+    .error-container {
+      background-color: #1a1a1a;
+      border-left: 6px solid #ff4c4c;
+      padding: 2rem;
+      border-radius: 12px;
+      max-width: 700px;
+      width: 100%;
+      box-shadow: 0 0 20px rgba(255, 76, 76, 0.3);
+    }
+
+    h1 {
+      color: #ff4c4c;
+      margin-bottom: 1rem;
+    }
+
+    p {
+      margin: 0.5rem 0;
+    }
+
+    code {
+      background-color: #2a2a2a;
+      padding: 0.5rem;
+      display: block;
+      white-space: pre-wrap;
+      border-radius: 6px;
+      margin-top: 1rem;
+      font-size: 0.95rem;
+      color: #ffcccc;
+    }
+
+    .btn-back {
+      display: inline-block;
+      margin-top: 1.5rem;
+      padding: 0.7rem 1.5rem;
+      background-color: #ff4c4c;
+      color: #fff;
+      border: none;
+      border-radius: 0.5rem;
+      text-decoration: none;
+      font-weight: bold;
+      transition: background-color 0.3s ease;
+    }
+
+    .btn-back:hover {
+      background-color: #e03c3c;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="error-container">
+    <h1>Something Went Wrong</h1>
+    <p>Sorry! We encountered an error while processing your request.</p>
+    
+    {% if data %}
+      <h3>Error Details:</h3>
+      <code>{{ data }}</code>
+    {% else %}
+      <code>No additional error info available.</code>
+    {% endif %}
+
+    <a href="{{ url_for('index') }}" class="btn-back">🔄 Try Again</a>
+  </div>
+</body>
+</html>

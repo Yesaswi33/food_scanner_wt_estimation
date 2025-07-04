@@ -3,6 +3,8 @@ import os
 from ultralytics import YOLO
 import cv2
 import numpy as np
+
+
 color_map={}
 def get_color_for_class(class_name):
     """Get consistent color for a class name"""
@@ -15,6 +17,7 @@ def get_color_for_class(class_name):
             np.random.randint(100, 256),
         )
     return color_map[class_name]
+
 def run_yolo_on_image(input_path, output_dir):
     model_version = "best-so-far.pt"
     model_path = os.path.join("models", model_version)
@@ -62,9 +65,9 @@ def run_yolo_on_image(input_path, output_dir):
             thickness = max(2, (width + height) // 300)
             # Draw filled rectangle (with some transparency)
             overlay = image.copy()
-            cv2.rectangle(overlay, (x1, y1), (x2, y2), color, -1)  # -1 fills the rectangle
-            alpha = 0.5  # Transparency factor (0.0 - 1.0)
-            cv2.addWeighted(overlay, alpha, image, 1 - alpha, 0, image)
+            # cv2.rectangle(overlay, (x1, y1), (x2, y2), color, -1)  # -1 fills the rectangle
+            # alpha = 0.5  # Transparency factor (0.0 - 1.0)
+            # cv2.addWeighted(overlay, alpha, image, 1 - alpha, 0, image)
             # Draw rectangle border
             cv2.rectangle(image, (x1, y1), (x2, y2), color, thickness)
             

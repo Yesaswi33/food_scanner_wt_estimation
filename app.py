@@ -44,18 +44,19 @@ def infer_image():
             details={"classes": predicted_classes, "boxes": boxes_info},
             image_path=filename
         )
-        print("===============",gemini_response)
-
+      
         # === Render result page ===
         return render_template(
-            "output.html",
-            data={
+        "output.html",
+        data={
                 "model_output_filename": filename,
                 "predicted_classes": predicted_classes,
                 "boxes": boxes_info,
-                "gemini_response": gemini_response
+                "nutrition_data": gemini_response.get("nutrition_data", []),
+                "suggestions": gemini_response.get("suggestions", [])
             }
         )
+
 
     except Exception as e:
         print("Exception during /infer_image:", e)

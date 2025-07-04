@@ -413,3 +413,7 @@ ul#predictedClasses li {
   justify-content: center;
   gap: 20px;
 }
+
+#uploadInput {
+  visibility: hidden;
+} 
