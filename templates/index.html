@@ -22,35 +22,32 @@
     </div>
 
     <!-- Upload Section -->
-    <div id="uploadSection" class="upload-section">
-      <div id="dropZone" class="drop-zone">
-        <div class="icon">🍽️</div>
-        <p><strong>Drop your food image here</strong><br>
-          or click to browse files<br>
-          <small>You can also paste from clipboard (Ctrl+V)</small>
-        </p>
-        <input type="file" id="uploadInput" accept="image/*" hidden />
-      </div>
+    <div id="uploadSection" class="upload-section" style="display: none;">
+      <form action="/infer_image" method="POST" enctype="multipart/form-data">
+        <div id="dropZone" class="drop-zone">
+          <div class="icon">🍽️</div>
+          <p><strong>Drop your food image here</strong><br>
+            or click to browse files<br>
+            <small>You can also paste from clipboard (Ctrl+V)</small>
+          </p>
+          <input type="file" id="uploadInput" name="image" accept="image/*" required />
+        </div>
 
-      <div id="previewContainer" class="preview-container" style="display: none;">
-        <img id="previewImage" class="preview-image" alt="Preview" />
-        <div id="fileInfo" class="file-info"></div>
-      </div>
+        <div id="previewContainer" class="preview-container" style="display: none;">
+          <img id="previewImage" class="preview-image" alt="Preview" />
+          <div id="fileInfo" class="file-info"></div>
+        </div>
 
-      <!-- <div id="processing" class="processing">
-        <div class="loading-spinner"></div>
-        <span>Analyzing your delicious food...</span>
-      </div> -->
+        <div id="statusMessage" class="status-message"></div>
 
-      <div id="statusMessage" class="status-message"></div>
-
-      <button id="uploadBtn" class="primary-btn" onclick="uploadImage()" style="display: none;">
-        🚀 Analyze Food
-      </button>
+        <button type="submit" class="primary-btn" id="uploadBtn" style="display: none;">
+          🚀 Analyze Food
+        </button>
+      </form>
     </div>
 
     <!-- Live Section -->
-    <div id="liveSection" class="live-section">
+    <div id="liveSection" class="live-section" style="display: none;">
       <p style="margin-bottom: 20px; font-size: 16px; color: #ccc;">
         📸 Position your food in the camera view and capture
       </p>
@@ -58,6 +55,11 @@
       <br />
       <button class="secondary-btn" onclick="handleLiveCapture()">📸 Capture & Analyze</button>
     </div>
+
+    <!-- Hidden Form for Live Capture -->
+    <form id="liveCaptureForm" action="/infer_image" method="POST" enctype="multipart/form-data" style="display: none;">
+      <input type="file" name="image" id="liveImageInput" />
+    </form>
   </div>
 
   <script src="../static/script.js"></script>

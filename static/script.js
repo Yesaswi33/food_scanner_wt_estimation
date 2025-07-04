@@ -65,11 +65,6 @@ function showStatus(message, type = "info") {
   statusEl.style.display = "block";
 }
 
-// === Processing Spinner Placeholder (optional)
-function showProcessing(show) {
-  // Optional: add loading spinner logic
-}
-
 // === File Preview + Upload Button ===
 function handleFileSelect(file) {
   if (!file || !file.type.startsWith("image/")) {
@@ -100,104 +95,40 @@ function handleFileSelect(file) {
   reader.readAsDataURL(file);
 }
 
-  if (!selectedFile) {
-    showStatus("Please select an image first", "error");
-    return;
-  }
-
-  const formData = new FormData();
-  formData.append("image", selectedFile);
-
-  try {
-    const formData = new FormData();
-    formData.append("image", selectedFile);
-    const response = await fetch("/infer_image", {
-      method: "POST",
-      body: formData
-    });
-
-    // const data = await response.json();
-    // showProcessing(false);
-
-    // if (response.ok) {
-    //   updateModelOutput(data.model_output_filename, data.boxes);
-    //   displayClasses(data.predicted_classes, data.boxes);
-    //   showStatus('Food analysis completed successfully!', 'success');
-    // } else {
-    //   showStatus('Upload failed: ' + (data.error || 'Unknown error'), 'error');
-    // }
-  } catch (error) {
-    showStatus("❌ Server error: " + error, "error");
-  }
+// === Upload Button ===
+// This function is no longer needed as HTML <form> handles upload via submit
+// but if you keep the upload button, you can allow manual trigger like below
+function uploadImage() {
+  document.querySelector("#uploadSection form").submit();
 }
 
+// === Live Capture Handler ===
+async function handleLiveCapture() {
+  const video = document.getElementById("userVideo");
+  const canvas = document.createElement("canvas");
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
 
-// function displayClasses(classes, boxes) {
-//   const predictedClassesElement = document.getElementById("predictedClasses");
-//   predictedClassesElement.innerHTML = "";
+  const ctx = canvas.getContext("2d");
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-//   if (!classes || classes.length === 0) {
-//     predictedClassesElement.innerHTML = "<li class='error'>❌ No food items detected</li>";
-//     return;
-//   }
+  canvas.toBlob((blob) => {
+    const file = new File([blob], "live_capture.png", { type: "image/png" });
 
-//   // Create a map to get the first occurrence of each class with its color
-//   const classColorMap = {};
-//   if (boxes && boxes.length > 0) {
-//     boxes.forEach(box => {
-//       if (!classColorMap[box.label]) {
-//         const [b, g, r] = box.color;
-//         console.log(box.color);
+    // Fill hidden input in live form
+    const dt = new DataTransfer();
+    dt.items.add(file);
+    const input = document.getElementById("liveImageInput");
+    input.files = dt.files;
 
-//         // classColorMap[box.label] = box.color;
-//         classColorMap[box.label] = `rgb(${r}, ${g}, ${b})`; // Use RGB format for CSS
-//       }
-//     });
-//   }
+    // Submit form
+    document.getElementById("liveCaptureForm").submit();
+  }, "image/png");
+}
 
-//   // Display only unique classes
-//   classes.forEach((classLabel, index) => {
-//     const li = document.createElement("li");
-//     li.textContent = `${index + 1}. ${classLabel}`;
-//     li.style.animationDelay = `${index * 0.1}s`;
-
-//     // Use the color from the map if available
-//     if (classColorMap[classLabel]) {
-//       li.style.color = classColorMap[classLabel];
-//       console.log("Li Styling" + li.style.color);
-//     } else {
-//       console.log("Li Styling not found for " + classLabel);
-
-//     }
-
-//     predictedClassesElement.appendChild(li);
-//   });
-// }
-
-// let lastBoxes = [];
-// function updateModelOutput(filename, boxes) {
-//   const output = document.getElementById("modelOutputImage");
-//   output.src = "/saved_images/" + filename + "?t=" + Date.now();
-//   document.getElementById("modelOutput").style.display = "block";
-//   lastBoxes = boxes || [];
-//   // Smooth scroll to results
-//   setTimeout(() => {
-//     document.getElementById("modelOutput").scrollIntoView({
-//       behavior: 'smooth',
-//       block: 'center'
-//     });
-//   }, 100);
-//   drawBoundingBoxesAndLabels(lastBoxes);
-// }
-
-
-// Enhanced Drag and Drop functionality
-
-
-
-
-const dropZone = document.getElementById('dropZone');
-const fileInput = document.getElementById('uploadInput');
+// === Drag & Drop Setup ===
+const dropZone = document.getElementById("dropZone");
+const fileInput = document.getElementById("uploadInput");
 
 dropZone.addEventListener("click", () => fileInput.click());
 fileInput.addEventListener("change", (e) => {
