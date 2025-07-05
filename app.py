@@ -2,7 +2,7 @@ from flask import Flask, render_template, send_from_directory, request
 import os
 import uuid
 from utils.gemini_output import get_gemini_response
-from utils.run_yolo import run_yolo_on_image
+from utils.run_yolo import run_yolo_on_image, get_color_map
 
 app = Flask(__name__)
 
@@ -53,7 +53,8 @@ def infer_image():
                 "predicted_classes": predicted_classes,
                 "boxes": boxes_info,
                 "nutrition_data": gemini_response.get("nutrition_data", []),
-                "suggestions": gemini_response.get("suggestions", [])
+                "suggestions": gemini_response.get("suggestions", []),
+                "color_map": get_color_map(),
             }
         )
 

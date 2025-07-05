@@ -416,4 +416,17 @@ ul#predictedClasses li {
 
 #uploadInput {
   visibility: hidden;
-} 
+}
+
+.image-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+
+  ul {
+    font-size: 22px;
+    text-transform: capitalize;
+    text-align: left;
+  }
+}

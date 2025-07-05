@@ -95,11 +95,6 @@ function handleFileSelect(file) {
   reader.readAsDataURL(file);
 }
 
-function handleClick (e) {
-  console.log("clicked");
-  e.target.disabled = true;
-}
-
 // === Upload Button ===
 // This function is no longer needed as HTML <form> handles upload via submit
 // but if you keep the upload button, you can allow manual trigger like below

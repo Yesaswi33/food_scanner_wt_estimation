@@ -29,7 +29,7 @@
       height: auto;
       border-radius: 1rem;
       margin-bottom: 2rem;
-      border: 2px solid #0ff;
+      border: 2px solid #0ffc;
     }
 
     .result-title {
@@ -43,7 +43,8 @@
       margin-top: 1rem;
     }
 
-    th, td {
+    th,
+    td {
       padding: 10px;
       border: 1px solid #333;
     }
@@ -82,6 +83,14 @@
     .back-btn:hover {
       background: #00e6cc;
     }
+
+    h2 {
+      font-size: 42px;
+      margin-bottom: 15px;
+      color: #ffdd57;
+      text-shadow: 0 0 15px #ffdd5755;
+      /* animation: float 4s ease-in-out infinite; */
+    }
   </style>
 </head>
 
@@ -89,10 +98,28 @@
   <div class="container">
     <h1 class="result-title">🍽 Food Analysis Result</h1>
 
-    <img class="image-preview"
-      src="{{ url_for('serve_saved_image', filename=data.model_output_filename) }}"
-      alt="Processed Image" />
+    <section class="image-section">
+      <img class="image-preview" src="{{ url_for('serve_saved_image', filename=data.model_output_filename) }}"
+        alt="Processed Image" />
+      <div id="classLabels" class="class-labels">
+        {% if data.predicted_classes and data.predicted_classes|length > 0 %}
+        <h3>🍕 Predicted Food Items:</h3>
+        <ul>
+          {% for item in data.predicted_classes %}
+            <li style="color: {{data.color_map[item]}};">{{ item.replace("_", " ") }}</li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p>No food items detected.</p>
+        {% endif %}
+      </div>
+    </section>
 
+    <!-- 
+      <script> 
+        console.log("Predicted Classes:", {{ data.color_map[data.predicted_classes[0]] | tojson }});
+      </script>
+    -->
     <h2>🍕 Nutrition Details Per Item:</h2>
     <table>
       <thead>
@@ -106,37 +133,38 @@
       </thead>
       <tbody>
         {% if data.nutrition_data and data.nutrition_data|length > 0 %}
-          {% for item in data.nutrition_data %}
-          <tr>
-            <td>{{ item.food_item }}</td>
-            <td>{{ item.calories }}</td>
-            <td>{{ item.proteins }}</td>
-            <td>{{ item.fat }}</td>
-            <td>{{ item.carbs }}</td>
-          </tr>
-          {% endfor %}
+        {% for item in data.nutrition_data %}
+        <tr>
+          <td>{{ item.food_item }}</td>
+          <td>{{ item.calories }}</td>
+          <td>{{ item.proteins }}</td>
+          <td>{{ item.fat }}</td>
+          <td>{{ item.carbs }}</td>
+        </tr>
+        {% endfor %}
         {% else %}
-          <tr>
-            <td colspan="5">No nutrition data available.</td>
-          </tr>
+        <tr>
+          <td colspan="5">No nutrition data available.</td>
+        </tr>
         {% endif %}
       </tbody>
     </table>
 
-    <h2>🧠 Gemini AI Suggestions:</h2>
+    <h2>🧠 AI Suggestions:</h2>
     <div class="gemini-output">
       {% if data.suggestions %}
-        {% for suggestion in data.suggestions %}
-          <p>💡 {{ suggestion }}</p>
-        {% endfor %}
+      {% for suggestion in data.suggestions %}
+      <p>💡 {{ suggestion }}</p>
+      {% endfor %}
       {% else %}
-        <p>No suggestions available.</p>
+      <p>No suggestions available.</p>
       {% endif %}
     </div>
 
     <a href="{{ url_for('index') }}">
       <button class="back-btn">🔄 Analyze Another</button>
     </a>
+
   </div>
 </body>
 
