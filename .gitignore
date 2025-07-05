@@ -4,3 +4,5 @@
 __pycache__
 
 models/*.pt
+.saved_images
+.captured_images

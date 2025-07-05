@@ -3,7 +3,7 @@ from PIL import Image
 import os
 
 # Set your API key
-GOOGLE_API_KEY = "AIzaSyDUIuGISoHdDKOkSu64Y4m5StsyaBTIoek"
+GOOGLE_API_KEY = "AIzaSyCOoGgp5MjH9D71QTZ-Y92UnC8dcSU57ls"
 genai.configure(api_key=GOOGLE_API_KEY)
 
 # Load the model (Gemini Pro for text or Gemini Pro Vision for image+text)
@@ -38,6 +38,15 @@ Return the response strictly in the following JSON format:
     "<suggestion_2>"
   ]
 }
+if multiple number of boxes detected for single dish give output as by adding there nutrition like in the below format
+"nutrition_data": [
+    {
+      "food_item": "idly X 3",
+      "calories": <int>,
+      "proteins": <float>,
+      "fat": <float>,
+      "carbs": <float>
+    },
 
 Only return valid JSON. Do not include any explanation or extra text.
 """
